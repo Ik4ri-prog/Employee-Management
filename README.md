@@ -1,7 +1,7 @@
 # Employee-Management
 "You need to install MongoDB and Node.js"
 
-# Dependencies installation 
+
 
 # Install backend dependencies: Go to backend folder and do the commands below
 
