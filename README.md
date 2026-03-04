@@ -6,6 +6,7 @@
 # Install backend dependencies: Go to backend folder and do the commands below
 
 npm install express mongoose bcryptjs jsonwebtoken cors dotenv
+
 npm install nodemon --save-dev
 
 # Install frontend dependencies: Go to frontend folder and do the commands below
