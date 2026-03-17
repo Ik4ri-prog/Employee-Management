@@ -37,7 +37,9 @@ MONGO_URI=mongodb://127.0.0.1:27017/employeeDB
 JWT_SECRET=your_secret_key
 
 
-# Register an Account and Manually change the status into "approved"
+# Account Admin "
 
+email: admin@example.com
+password: admin123
 
 If you have done all of this, then the you can run the system now.
