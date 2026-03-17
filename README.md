@@ -39,7 +39,7 @@ JWT_SECRET=your_secret_key
 
 # Account Admin "
 
-email: admin@example.com
+email: admin@gmail.com
 password: admin123
 
 If you have done all of this, then the you can run the system now.
