@@ -3,20 +3,23 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const seedAdmin = require("./seedAdmin"); 
+const dynamicRoutes = require("./routes/dynamic");
+const authRoutes = require('./routes/auth'); 
+const userRoutes = require("./routes/userRoutes");
+const auditRoutes = require("./routes/audit"); 
+
 
 dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(cors());
-
-const authRoutes = require('./routes/auth');
-const employeeRoutes = require('./routes/employees');
-const userRoutes = require("./routes/userRoutes");
-
+app.use("/api/audit", require("./routes/audit"));
+app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/employees', employeeRoutes);
-app.use("/api/users", userRoutes);
+app.use("/api/dynamic", dynamicRoutes);
+app.use("/api/audit-logs", auditRoutes);
 
+// Connect to MongoDB
 mongoose
   .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(async () => {
