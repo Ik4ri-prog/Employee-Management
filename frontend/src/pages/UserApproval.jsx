@@ -2,48 +2,65 @@ import { useEffect, useState } from "react";
 import DashboardLayout from "../layouts/DashboardLayout";
 import axios from "axios";
 
+const API_URL = "http://localhost:5000/api/users";
+
 const UserApproval = () => {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [perPage] = useState(5); // number of users per page
+  const [perPage] = useState(5);
 
-  // Fetch users from backend
+  const token = localStorage.getItem("token");
+  const email = localStorage.getItem("email"); 
+
+  // Fetch users
   const fetchUsers = async () => {
-    const res = await axios.get("http://localhost:5000/api/users");
-    setUsers(res.data);
+    try {
+      const res = await axios.get(API_URL, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUsers(res.data);
+    } catch (err) {
+      console.error("Fetch Users Error:", err);
+    }
   };
 
   useEffect(() => {
     fetchUsers();
   }, []);
 
-  // Update user status
   const updateStatus = async (id, status) => {
-    await axios.put(`http://localhost:5000/api/users/${id}`, { status });
-    fetchUsers();
+    try {
+      await axios.put(
+        `${API_URL}/${id}`,
+        {
+          status,
+          updatedBy: email,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      fetchUsers();
+    } catch (err) {
+      console.error("Update Status Error:", err);
+    }
   };
 
-  // Filter users by search
   const filteredUsers = users.filter((user) =>
     user.email.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Pagination calculations
   const indexOfLastUser = currentPage * perPage;
   const indexOfFirstUser = indexOfLastUser - perPage;
   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
   const totalPages = Math.ceil(filteredUsers.length / perPage);
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
   return (
     <DashboardLayout>
       <div className="max-w-6xl mx-auto py-6 space-y-6">
 
-        {/* Page Header */}
+        {/* Header */}
         <div>
           <h1 className="text-2xl font-bold text-gray-800">
             User Approval Management
@@ -53,14 +70,14 @@ const UserApproval = () => {
           </p>
         </div>
 
-        {/* Search Bar */}
+        {/* Search */}
         <div className="flex justify-end">
           <input
             type="text"
             placeholder="Search by email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent w-64"
+            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 w-64"
           />
         </div>
 
@@ -79,6 +96,7 @@ const UserApproval = () => {
                   <th className="px-6 py-4 text-left font-bold">Actions</th>
                 </tr>
               </thead>
+
               <tbody>
                 {currentUsers.map((user) => (
                   <tr
@@ -108,13 +126,24 @@ const UserApproval = () => {
                     <td className="px-6 py-4 space-x-2">
                       <button
                         onClick={() => updateStatus(user._id, "approved")}
-                        className="px-4 py-1.5 text-xs rounded-md border border-green-200 text-green-700 font-bold hover:bg-green-50 transition"
+                        disabled={user.status === "approved"} // ✅ disable if already approved
+                        className={`px-4 py-1.5 text-xs rounded-md border font-bold transition ${
+                          user.status === "approved"
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "border-green-200 text-green-700 hover:bg-green-50"
+                        }`}
                       >
                         Approve
                       </button>
+
                       <button
                         onClick={() => updateStatus(user._id, "denied")}
-                        className="px-4 py-1.5 text-xs rounded-md border border-red-200 text-red-600 font-bold hover:bg-red-50 transition"
+                        disabled={user.status === "denied"} // ✅ disable if already denied
+                        className={`px-4 py-1.5 text-xs rounded-md border font-bold transition ${
+                          user.status === "denied"
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "border-red-200 text-red-600 hover:bg-red-50"
+                        }`}
                       >
                         Deny
                       </button>
@@ -132,19 +161,18 @@ const UserApproval = () => {
             {Array.from({ length: totalPages }, (_, i) => (
               <button
                 key={i + 1}
-                onClick={() => handlePageChange(i + 1)}
+                onClick={() => setCurrentPage(i + 1)}
                 className={`px-3 py-1 rounded-md border ${
                   currentPage === i + 1
                     ? "bg-blue-600 text-white border-blue-600"
                     : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-                } font-bold transition`}
+                } font-bold`}
               >
                 {i + 1}
               </button>
             ))}
           </div>
         )}
-
       </div>
     </DashboardLayout>
   );
