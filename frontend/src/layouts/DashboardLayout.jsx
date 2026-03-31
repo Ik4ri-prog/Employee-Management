@@ -27,6 +27,12 @@ const DashboardLayout = ({ children }) => {
             >
               User Approval
             </Link>
+            <Link
+              to="/auditlog"
+              className="text-gray-700 hover:text-blue-600 font-medium"
+            >
+              Audit Log
+            </Link>
           </nav>
         </div>
 
