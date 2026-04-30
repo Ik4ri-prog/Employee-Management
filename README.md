@@ -37,9 +37,15 @@ MONGO_URI=mongodb://127.0.0.1:27017/employeeDB
 JWT_SECRET=your_secret_key
 
 
-# Account Admin "
+# Account Admin 
 
 email: admin@gmail.com
 password: admin123
+
+# Account User
+
+email: user@gmail.com
+password: user123
+
 
 If you have done all of this, then the you can run the system now.
