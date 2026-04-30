@@ -4,15 +4,24 @@ import { useNavigate, Link } from "react-router-dom";
 
 const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
-  const [errorType, setErrorType] = useState(null); // new
+  const [errorType, setErrorType] = useState(null);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const res = await login(form);
+
       localStorage.setItem("token", res.data.token);
-      navigate("/Dashboard");
+      localStorage.setItem("role", res.data.role);
+      localStorage.setItem("email", res.data.email);
+
+      if (res.data.role === "admin") {
+        navigate("/Dashboard");
+      } else {
+        navigate("/UserEmployee");
+      }
+
     } catch (err) {
       const message = err.response?.data?.message || "";
 
@@ -21,7 +30,7 @@ const Login = () => {
       } else if (message.toLowerCase().includes("denied")) {
         setErrorType("denied");
       } else {
-        setErrorType("invalid"); // wrong credentials
+        setErrorType("invalid");
       }
     }
   };
@@ -45,6 +54,7 @@ const Login = () => {
             onChange={(e) => setForm({ ...form, email: e.target.value })}
             required
           />
+
           <input
             type="password"
             placeholder="Password"
