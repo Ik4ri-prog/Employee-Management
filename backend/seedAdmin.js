@@ -2,30 +2,50 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const User = require("./models/User"); // adjust path
 
-const seedAdmin = async () => {
+const seedUsers = async () => {
   try {
+    // ADMIN SEED
     const adminEmail = "admin@gmail.com";
     const adminExists = await User.findOne({ email: adminEmail });
 
-    if (adminExists) {
+    if (!adminExists) {
+      const hashedAdminPassword = await bcrypt.hash("admin123", 10);
+
+      const adminUser = new User({
+        email: adminEmail,
+        password: hashedAdminPassword,
+        role: "admin",
+        status: "approved",
+      });
+
+      await adminUser.save();
+      console.log("Admin user created successfully");
+    } else {
       console.log("Admin already exists");
-      return;
     }
 
-    const hashedPassword = await bcrypt.hash("admin123", 10);
+    const userEmail = "user@gmail.com";
+    const userExists = await User.findOne({ email: userEmail });
 
-    const adminUser = new User({
-      email: adminEmail,
-      password: hashedPassword,
-      role: "admin",
-      status: "approved",
-    });
+    if (!userExists) {
+      const hashedUserPassword = await bcrypt.hash("user123", 10);
 
-    await adminUser.save();
-    console.log("Admin user created successfully");
+      const normalUser = new User({
+        email: userEmail,
+        password: hashedUserPassword,
+        role: "user",
+        status: "approved",
+      });
+
+      await normalUser.save();
+      console.log("Normal user created successfully");
+    } else {
+      console.log("User already exists");
+    }
+
   } catch (err) {
-    console.error("Error creating admin:", err.message);
+    console.error("Error seeding users:", err.message);
   }
 };
 
-module.exports = seedAdmin;
+module.exports = seedUsers;
