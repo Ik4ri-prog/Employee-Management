@@ -11,9 +11,8 @@ const UserApproval = () => {
   const [perPage] = useState(5);
 
   const token = localStorage.getItem("token");
-  const email = localStorage.getItem("email"); 
+  const email = localStorage.getItem("email");
 
-  // Fetch users
   const fetchUsers = async () => {
     try {
       const res = await axios.get(API_URL, {
@@ -47,6 +46,25 @@ const UserApproval = () => {
     }
   };
 
+  const updateRole = async (id, role) => {
+    try {
+      await axios.put(
+        `${API_URL}/${id}`,
+        {
+          role,
+          updatedBy: email,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      fetchUsers();
+    } catch (err) {
+      console.error("Update Role Error:", err);
+    }
+  };
+
+  // Filter users
   const filteredUsers = users.filter((user) =>
     user.email.toLowerCase().includes(search.toLowerCase())
   );
@@ -77,34 +95,38 @@ const UserApproval = () => {
             placeholder="Search by email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 w-64"
+            className="px-4 py-2 border border-gray-300 rounded-md w-64"
           />
         </div>
 
         {/* Table */}
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div className="bg-white border rounded-xl overflow-hidden">
+
           {users.length === 0 ? (
             <div className="py-16 text-center text-gray-400 font-bold text-lg">
               No registered users available.
             </div>
           ) : (
             <table className="w-full text-sm text-gray-700">
-              <thead className="bg-gray-50 border-b border-gray-200">
+
+              <thead className="bg-gray-50 border-b">
                 <tr>
                   <th className="px-6 py-4 text-left font-bold">Email</th>
                   <th className="px-6 py-4 text-left font-bold">Status</th>
+                  <th className="px-6 py-4 text-left font-bold">Role</th>
                   <th className="px-6 py-4 text-left font-bold">Actions</th>
                 </tr>
               </thead>
 
               <tbody>
                 {currentUsers.map((user) => (
-                  <tr
-                    key={user._id}
-                    className="border-b border-gray-100 hover:bg-gray-50 transition"
-                  >
-                    <td className="px-6 py-4 font-bold">{user.email}</td>
+                  <tr key={user._id} className="border-b hover:bg-gray-50">
 
+                    <td className="px-6 py-4 font-bold">
+                      {user.email}
+                    </td>
+
+                    {/* STATUS */}
                     <td className="px-6 py-4">
                       {user.status === "approved" && (
                         <span className="px-3 py-1 text-xs rounded-full bg-green-100 text-green-700 font-bold">
@@ -123,14 +145,30 @@ const UserApproval = () => {
                       )}
                     </td>
 
+                    {/* ROLE */}
+                    <td className="px-6 py-4">
+                      {user.role === "admin" ? (
+                        <span className="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-700 font-bold">
+                          Admin
+                        </span>
+                      ) : (
+                        <span className="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-600 font-bold">
+                          User
+                        </span>
+                      )}
+                    </td>
+
+                    {/* ACTIONS */}
                     <td className="px-6 py-4 space-x-2">
+
+                      {/* Approve / Deny */}
                       <button
                         onClick={() => updateStatus(user._id, "approved")}
-                        disabled={user.status === "approved"} // ✅ disable if already approved
-                        className={`px-4 py-1.5 text-xs rounded-md border font-bold transition ${
+                        disabled={user.status === "approved"}
+                        className={`px-3 py-1 text-xs rounded border ${
                           user.status === "approved"
                             ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                            : "border-green-200 text-green-700 hover:bg-green-50"
+                            : "border-green-300 text-green-700 hover:bg-green-50"
                         }`}
                       >
                         Approve
@@ -138,19 +176,38 @@ const UserApproval = () => {
 
                       <button
                         onClick={() => updateStatus(user._id, "denied")}
-                        disabled={user.status === "denied"} // ✅ disable if already denied
-                        className={`px-4 py-1.5 text-xs rounded-md border font-bold transition ${
+                        disabled={user.status === "denied"}
+                        className={`px-3 py-1 text-xs rounded border ${
                           user.status === "denied"
                             ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                            : "border-red-200 text-red-600 hover:bg-red-50"
+                            : "border-red-300 text-red-600 hover:bg-red-50"
                         }`}
                       >
                         Deny
                       </button>
+
+                      {/* Promote / Demote */}
+                      {user.role !== "admin" ? (
+                        <button
+                          onClick={() => updateRole(user._id, "admin")}
+                          className="px-3 py-1 text-xs rounded border border-blue-300 text-blue-700 hover:bg-blue-50"
+                        >
+                          Promote
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => updateRole(user._id, "user")}
+                          className="px-3 py-1 text-xs rounded border border-gray-300 text-gray-600 hover:bg-gray-100"
+                        >
+                          Demote
+                        </button>
+                      )}
+
                     </td>
                   </tr>
                 ))}
               </tbody>
+
             </table>
           )}
         </div>
@@ -162,17 +219,18 @@ const UserApproval = () => {
               <button
                 key={i + 1}
                 onClick={() => setCurrentPage(i + 1)}
-                className={`px-3 py-1 rounded-md border ${
+                className={`px-3 py-1 rounded border ${
                   currentPage === i + 1
-                    ? "bg-blue-600 text-white border-blue-600"
-                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-                } font-bold`}
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-gray-700"
+                }`}
               >
                 {i + 1}
               </button>
             ))}
           </div>
         )}
+
       </div>
     </DashboardLayout>
   );
