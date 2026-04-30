@@ -57,7 +57,6 @@ exports.handleRequest = async (req, res) => {
 
     switch (req.method) {
 
-      // ✅ CREATE
       case "POST":
         const createErrors = validateData(req.body, Model.schema.paths);
         if (createErrors.length > 0) {
@@ -72,12 +71,10 @@ exports.handleRequest = async (req, res) => {
 
         return res.json(created);
 
-      // ✅ READ (exclude soft deleted)
       case "GET":
         const data = await Model.find({ isDeleted: false });
         return res.json(data);
 
-      // ✅ UPDATE
       case "PUT":
         const updateErrors = validateData(req.body, Model.schema.paths);
         if (updateErrors.length > 0) {
